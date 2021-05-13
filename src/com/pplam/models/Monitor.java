@@ -1,10 +1,11 @@
 package com.pplam.models;
+import com.pplam.helpers.Helpers;
 import java.net.MalformedURLException;
+import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import static java.rmi.Naming.lookup;
-import static com.pplam.helpers.Helpers.error;
 
 public class Monitor implements Remote {
     private double time;
@@ -12,13 +13,14 @@ public class Monitor implements Remote {
 
     /**
      * Constructor Monitor
-     * @param args parametros de conexion
      * @throws RemoteException
      * @throws MalformedURLException
      * @throws NotBoundException
      */
-    public Monitor(String ...args) throws RemoteException, MalformedURLException, NotBoundException {
-        this.coordinator = (Coordinator) lookup("rmi://" + args[0] + ":" + Double.parseDouble(args[1]) + "/Coordinator");
+    public Monitor() throws RemoteException, MalformedURLException, NotBoundException {
+        this.coordinator = (Coordinator) lookup("rmi://localhost:1099/Coordinator");
+        Helpers.startRegistry(2099);
+        Naming.rebind("rmi://localhost:2099/Monitor", this);
     }
 
     /**
@@ -41,13 +43,16 @@ public class Monitor implements Remote {
         this.setTime(coordinator.initMonitor(this));
     }
 
-    public static void main(String[] args) throws MalformedURLException, NotBoundException, RemoteException {
-        if(args.length != 3) error();
+    public void getAvgLoad() {
+        this.coordinator.getLoadAvg();
+    }
+
+    public static void main(String[] args) throws RemoteException {
         try {
-            new Monitor(args[1], args[2]).initMonitor();
+            new Monitor().initMonitor();
 
         } catch (Exception exception) {
-
+            exception.printStackTrace();
         }
 
     }
