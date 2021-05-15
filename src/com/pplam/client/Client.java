@@ -1,5 +1,7 @@
 package com.pplam.client;
-import com.pplam.models.Monitor;
+
+import com.pplam.configurations.Configuration;
+import com.pplam.interfaces.IRmiMonitor;
 
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
@@ -9,11 +11,12 @@ import static java.rmi.Naming.lookup;
 
 public class Client {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws RemoteException {
         try {
-            Monitor monitor = (Monitor) lookup("rmi://localhost:2099/Monitor");
-            monitor.getAvgLoad();
-        } catch(Exception exception) {
+            IRmiMonitor monitor = (IRmiMonitor) lookup(Configuration.getRouteMonitor);
+            monitor.initClient();
+            System.out.println("Entro");
+        } catch (ClassCastException | MalformedURLException | NotBoundException exception) {
             exception.printStackTrace();
         }
     }

@@ -1,26 +1,21 @@
 package com.pplam.models;
-import com.pplam.helpers.Helpers;
-import java.net.MalformedURLException;
-import java.rmi.Naming;
-import java.rmi.NotBoundException;
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-import static java.rmi.Naming.lookup;
+import com.pplam.interfaces.IRmiMonitor;
+import com.pplam.interfaces.IRmiServer;
 
-public class Monitor implements Remote {
+import java.net.MalformedURLException;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+
+public class Monitor extends UnicastRemoteObject implements IRmiMonitor {
     private double time;
-    private final Coordinator coordinator;
+    private IRmiServer coordinator;
 
     /**
      * Constructor Monitor
-     * @throws RemoteException
-     * @throws MalformedURLException
-     * @throws NotBoundException
      */
-    public Monitor() throws RemoteException, MalformedURLException, NotBoundException {
-        this.coordinator = (Coordinator) lookup("rmi://localhost:1099/Coordinator");
-        Helpers.startRegistry(2099);
-        Naming.rebind("rmi://localhost:2099/Monitor", this);
+    public Monitor(IRmiServer coordinator) throws RemoteException {
+        super();
+        this.coordinator = coordinator;
     }
 
     /**
@@ -33,27 +28,27 @@ public class Monitor implements Remote {
 
     /**
      * establece el time
-     * @param time
+     * @param time tiempo a establecer
      */
     public void setTime(double time) {
         this.time = time;
     }
 
-    private void initMonitor() {
-        this.setTime(coordinator.initMonitor(this));
-    }
-
-    public void getAvgLoad() {
-        this.coordinator.getLoadAvg();
-    }
-
-    public static void main(String[] args) throws RemoteException {
+    @Override
+    public void initClient() {
         try {
-            new Monitor().initMonitor();
-
-        } catch (Exception exception) {
-            exception.printStackTrace();
+            System.out.println("Total de monitores funcionando: " + this.coordinator.initClient());
+        } catch (RemoteException e) {
+            e.printStackTrace();
         }
+    }
 
+    @Override
+    public void initMonitor() {
+        try {
+            this.coordinator.initMonitor(this);
+        } catch (RemoteException | MalformedURLException e) {
+            e.printStackTrace();
+        }
     }
 }

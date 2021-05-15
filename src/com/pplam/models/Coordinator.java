@@ -1,35 +1,30 @@
 package com.pplam.models;
+
 import com.pplam.helpers.Helpers;
+import com.pplam.interfaces.IRmiMonitor;
 import com.pplam.interfaces.IRmiServer;
+
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
+import java.util.Vector;
+
 import static java.lang.Thread.sleep;
 
 public class Coordinator extends UnicastRemoteObject implements IRmiServer {
-    private ArrayList<Monitor> monitors = new ArrayList<>();
-    private static Coordinator coordinator;
+    private Vector<IRmiMonitor> monitors = new Vector<>();
     private String[] listMonitors;
     public static int quantityMonitors = 0;
     private double time;
-    /**
-     * Constructor Coordinator
-     */
-    private Coordinator() throws RemoteException {
-        super();
-    }
 
     /**
-     * retorna una unica instancia de la clase Coordinator usando el patron singleton
-     * @return Coordinator
+     * @param time tiempo a esperar
      * @throws RemoteException
      */
-    public static Coordinator getInstance() throws RemoteException {
-        if(coordinator == null)
-            coordinator = new Coordinator();
-        return coordinator;
+    public Coordinator(Double time) throws RemoteException {
+        super();
+        this.setTime(time);
     }
 
     /**
@@ -37,19 +32,25 @@ public class Coordinator extends UnicastRemoteObject implements IRmiServer {
      * @return double
      */
     @Override
-    public double initMonitor(Monitor monitor) {
-        this.monitors.add(monitor);
-        return this.getTime();
+    public void initMonitor(IRmiMonitor monitor) throws RemoteException {
+        System.out.println("Entra a la funcion");
+        try {
+            monitors.addElement(monitor);
+            System.out.println("Se agrego");
+        } catch (Exception exception) {
+            System.out.println("No se agrego");
+        }
     }
 
     /**
      * metodo sobreescrito de la interfaz IRmiServer
      * @param result resultado obtenido del fichero /proc/loadavg
      */
+    @SuppressWarnings({"InfiniteLoopStatement", "BusyWait"})
     @Override
     public void loadMonitor(String result) {
         do {
-            System.out.println("Valor contenido: " + result);
+            System.out.println("Informacion del CPU: " + result);
             try {
                 sleep((long) this.time);
             } catch (InterruptedException e) {
@@ -67,9 +68,9 @@ public class Coordinator extends UnicastRemoteObject implements IRmiServer {
             e.printStackTrace();
         }
         for(String remote : listMonitors) {
-            if(remote.equals("Coordinator"))
+            if(remote.equals("Monitor"))
                 try {
-                    Naming.unbind(remote);
+                    //Naming.unbind(remote);
                     continue;
                 } catch (Exception exception) {
                     exception.printStackTrace();
@@ -85,11 +86,11 @@ public class Coordinator extends UnicastRemoteObject implements IRmiServer {
         loadMonitor(Helpers.getContentFile());
     }
 
-    public ArrayList<Monitor> getMonitors() {
+    public Vector<IRmiMonitor> getMonitors() {
         return monitors;
     }
 
-    public void setMonitors(ArrayList<Monitor> monitors) {
+    public void setMonitors(Vector<IRmiMonitor> monitors) {
         this.monitors = monitors;
     }
 
