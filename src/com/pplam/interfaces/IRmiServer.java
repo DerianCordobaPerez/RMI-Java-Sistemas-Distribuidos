@@ -16,9 +16,8 @@ public interface IRmiServer extends Remote {
 
     /**
      * metodo invocado por los monitores, sera invocado indefinida con el periodo obtenido del metodo initMonitor
-     * @param result resultado obtenido del fichero /proc/loadavg
      */
-    void loadMonitor(String result) throws RemoteException;
+    String loadMonitor() throws RemoteException;
 
     /**
      * metodo invocado por los clientes, sera invocado de manera forzada para comprobar el numero de monitor que estan funcionando
@@ -29,5 +28,7 @@ public interface IRmiServer extends Remote {
     /**
      * metodo invocado por los clientes, obtiene el ultimo valor captura proviniente del metodo loadMonitor
      */
-    void getLoadAvg() throws RemoteException;
+    String getLoadAvg() throws RemoteException;
+
+    long getTime() throws RemoteException;
 }

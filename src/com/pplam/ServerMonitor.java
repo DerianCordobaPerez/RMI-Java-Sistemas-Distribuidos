@@ -14,8 +14,9 @@ public class ServerMonitor {
     public static void main(String[] args) throws RemoteException, MalformedURLException, NotBoundException {
         startRegistry(1099);
         IRmiServer coordinator = (IRmiServer) Naming.lookup(Configuration.getRouteCoordinator);
-        IRmiMonitor monitor = new Monitor(coordinator);
+        IRmiMonitor monitor = new Monitor(coordinator, coordinator.getTime());
         monitor.initMonitor();
         Naming.rebind(Configuration.setRouteMonitor, monitor);
+        monitor.loadMonitor();
     }
 }
